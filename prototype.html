@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Corsario del Mar - Prototype QR Experience</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --navy: #0A1628;
+      --navy-mid: #132236;
+      --navy-light: #1A2F45;
+      --red: #E8334A;
+      --green: #2D6A4F;
+      --cream: #F5F0E8;
+      --gold: #C9A84C;
+      --gold-light: #E2C06D;
+      --muted: #8B9AB0;
+      --border: rgba(201,168,76,0.25);
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    html, body { background: var(--navy); color: var(--cream); font-family: 'Inter', sans-serif; scroll-behavior: smooth; }
+    .hero {
+      min-height: 100vh;
+      position: relative;
+      display: grid;
+      place-items: center;
+      text-align: center;
+      padding: 3rem 1.25rem;
+      background:
+        linear-gradient(to bottom, rgba(10,22,40,0.45), rgba(10,22,40,0.92)),
+        url('https://images.unsplash.com/photo-1559827260-8eb56f9ef08a?auto=format&fit=crop&w=2000&q=80') center/cover no-repeat;
+    }
+    .hero-inner { max-width: 900px; }
+    .brand { font-family: 'Playfair Display', serif; font-size: clamp(1.1rem, 2.3vw, 1.6rem); letter-spacing: 0.06em; }
+    .loro { font-size: clamp(3rem, 8vw, 5rem); margin: 1rem 0; }
+    h1 { font-family: 'Playfair Display', serif; font-size: clamp(2.2rem, 7vw, 4.8rem); line-height: 1.05; }
+    .tagline { margin-top: 1rem; color: var(--gold); font-family: 'Playfair Display', serif; font-style: italic; font-size: clamp(1rem, 2.2vw, 1.5rem); }
+    .sub { margin: 1rem auto 2rem; max-width: 680px; color: rgba(245,240,232,0.8); }
+    .countdown {
+      display: inline-block;
+      border: 1px solid var(--border);
+      background: rgba(19,34,54,0.85);
+      color: var(--gold);
+      padding: 0.6rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.9rem;
+      margin-bottom: 1.25rem;
+    }
+    .cta { display: inline-flex; margin-top: 1rem; padding: 0.9rem 1.6rem; background: var(--gold); color: var(--navy); border-radius: 4px; font-weight: 700; text-decoration: none; }
+    .container { width: min(1040px, 92%); margin: 0 auto; }
+    .scan-panel {
+      margin-top: -60px;
+      background: linear-gradient(160deg, var(--navy-mid), var(--navy-light));
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.3rem;
+      display: grid;
+      gap: 1rem;
+      justify-items: center;
+      text-align: center;
+      box-shadow: 0 20px 70px rgba(0,0,0,0.45);
+      position: relative;
+      z-index: 2;
+    }
+    #qr { width: 160px; height: 160px; background: #fff; padding: 8px; border-radius: 6px; }
+    .scan-label { font-size: 0.95rem; color: var(--cream); }
+    .section { padding: 5rem 0; }
+    .video-wrap iframe { width: 100%; aspect-ratio: 16 / 9; border: 0; border-radius: 10px; }
+    .cards { display: grid; gap: 1.2rem; margin-top: 1.6rem; }
+    .card {
+      background: rgba(19,34,54,0.86);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 1.2rem;
+    }
+    .card h2 { font-family: 'Playfair Display', serif; color: var(--gold); margin-bottom: 0.5rem; font-size: 1.4rem; }
+    .card p { color: rgba(245,240,232,0.86); line-height: 1.7; }
+    .ingredient { border-left: 4px solid var(--green); }
+    .challenge img { width: 100%; border-radius: 8px; margin-bottom: 0.8rem; }
+    .challenge small { color: var(--muted); }
+    form { display: grid; gap: 0.8rem; margin-top: 1rem; }
+    input, button {
+      font: inherit;
+      border-radius: 6px;
+      border: 1px solid var(--border);
+      padding: 0.8rem;
+    }
+    input { background: #0f1d2f; color: var(--cream); }
+    button { background: var(--gold); color: var(--navy); border: none; font-weight: 700; cursor: pointer; }
+    .share { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1rem; }
+    .share a {
+      text-decoration: none;
+      border: 1px solid var(--border);
+      color: var(--gold);
+      padding: 0.5rem 0.8rem;
+      border-radius: 999px;
+      font-size: 0.85rem;
+    }
+    .reveal { opacity: 0; transform: translateY(24px); transition: opacity 0.65s ease, transform 0.65s ease; }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    footer { padding: 2rem 0 3rem; text-align: center; color: var(--muted); font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <header class="hero">
+    <div class="hero-inner">
+      <div class="brand">Corsario del Mar</div>
+      <div class="loro" aria-label="Loro mascot">🦜</div>
+      <h1>Every can hides a secret.<br>Every secret hides a place.</h1>
+      <p class="tagline">A prototype of the post-scan can experience</p>
+      <div class="countdown" id="monthCountdown">Prize draw closes in: -- days</div>
+      <p class="sub">This can unlocks Castro de Barona, Galicia: a windswept Atlantic promontory, a hidden ingredient story, and your photo challenge entry.</p>
+      <a class="cta" href="#experience">Begin the mystery</a>
+    </div>
+  </header>
+
+  <main class="container" id="experience">
+    <section class="scan-panel reveal">
+      <div id="qr" aria-label="Dynamic QR code"></div>
+      <p class="scan-label">Scan this to experience what's inside the can</p>
+    </section>
+
+    <section class="section reveal">
+      <div class="video-wrap">
+        <iframe
+          src="https://www.youtube.com/embed/ThQDoBIUQUc"
+          title="Castro de Barona drone footage"
+          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+          allowfullscreen>
+        </iframe>
+      </div>
+    </section>
+
+    <section class="section cards">
+      <article class="card reveal">
+        <h2>Historical fact card</h2>
+        <p>Castro de Barona, in Porto do Son (Galicia), is an Iron Age coastal settlement occupied from roughly the first millennium BCE into the Roman era; in the 16th century, the wider Ria de Muros-Noia coastline faced repeated privateer incursions, which helped shape local watch practices and maritime defense culture still referenced in regional heritage records today.</p>
+      </article>
+
+      <article class="card ingredient reveal">
+        <h2>Ingredient card</h2>
+        <p>This batch uses <strong>Pemento de Herbón (Padrón pepper)</strong> cold extract from a small family farm near Padrón, Galicia. The peppers are dried and steeped in a low-temperature infusion before blending, adding a faint delayed warmth after the watermelon note.</p>
+      </article>
+
+      <article class="card challenge reveal">
+        <h2>Cryptic photo challenge card</h2>
+        <img src="https://images.pexels.com/photos/1659437/pexels-photo-1659437.jpeg?auto=compress&cs=tinysrgb&w=1400" alt="Atlantic granite coast detail challenge image" />
+        <p>Find the exact granite edge where the swell breaks in this frame. Stand one meter back from the lip, keep the horizon in the top third, and recreate the shot at low tide.</p>
+        <small>Reference image source: Pexels</small>
+      </article>
+
+      <article class="card reveal">
+        <h2>Prize entry form</h2>
+        <form id="entryForm">
+          <input type="text" name="name" placeholder="Your name" required />
+          <input type="email" name="email" placeholder="Your email" required />
+          <input type="file" name="photo" accept="image/*" required />
+          <button type="submit">Submit My Discovery</button>
+        </form>
+        <p id="formMessage" style="margin-top:0.8rem;color:var(--gold);"></p>
+        <div class="share">
+          <a id="shareWhatsApp" href="#">Share on WhatsApp</a>
+          <a id="shareX" href="#">Share on Twitter/X</a>
+          <a id="shareInstagram" href="#">Share on Instagram</a>
+        </div>
+      </article>
+    </section>
+  </main>
+
+  <footer>
+    Corsario del Mar alpha prototype - QR to story to challenge to prize entry.
+  </footer>
+
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <script>
+    const pageUrl = window.location.href.split('#')[0];
+    new QRCode(document.getElementById('qr'), {
+      text: pageUrl,
+      width: 144,
+      height: 144,
+      colorDark: '#0A1628',
+      colorLight: '#ffffff'
+    });
+
+    function updateCountdown() {
+      const now = new Date();
+      const end = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59);
+      const ms = end - now;
+      const days = Math.max(0, Math.ceil(ms / (1000 * 60 * 60 * 24)));
+      document.getElementById('monthCountdown').textContent = 'Prize draw closes in: ' + days + ' days';
+    }
+    updateCountdown();
+    setInterval(updateCountdown, 60000);
+
+    const revealEls = document.querySelectorAll('.reveal');
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting) {
+          entry.target.classList.add('visible');
+          observer.unobserve(entry.target);
+        }
+      });
+    }, { threshold: 0.15 });
+    revealEls.forEach((el) => observer.observe(el));
+
+    document.getElementById('entryForm').addEventListener('submit', (e) => {
+      e.preventDefault();
+      document.getElementById('formMessage').textContent = 'Loro received your entry. Check your inbox for confirmation.';
+    });
+
+    const shareText = 'I just found a secret hidden in a can. Can you find it? #CorsarioDelMar';
+    const encodedText = encodeURIComponent(shareText);
+    const encodedUrl = encodeURIComponent(pageUrl);
+
+    document.getElementById('shareWhatsApp').href = 'https://wa.me/?text=' + encodedText + '%20' + encodedUrl;
+    document.getElementById('shareX').href = 'https://twitter.com/intent/tweet?text=' + encodedText + '&url=' + encodedUrl;
+    document.getElementById('shareInstagram').addEventListener('click', (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(shareText + ' ' + pageUrl).then(() => {
+        window.open('https://www.instagram.com/', '_blank', 'noopener');
+      });
+    });
+  </script>
+</body>
+</html>
